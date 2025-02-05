@@ -1,0 +1,56 @@
+name: Cross Compile
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - name: linux-amd64
+            runner: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            output: fest_rs-Linux-x86_64.tar.gz
+          - name: win-amd64
+            runner: windows-latest
+            target: x86_64-pc-windows-msvc
+            output: fest_rs-Windows-x86_64.zip
+          - name: macos-amd64
+            runner: macos-latest
+            target: x86_64-apple-darwin
+            output: fest_rs-Darwin-86_64.tar.gz
+          - name: macos-arm64
+            runner: macos-latest
+            target: aarch64-apple-darwin
+            output: fest_rs-Darwin-aarch64.tar.gz
+
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+ 
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: "${{ matrix.target }}"
+ 
+      - name: Setup Cache
+        uses: Swatinem/rust-cache@v2
+ 
+      - name: Build Binary
+        run: cargo build --verbose --locked --release --target ${{ matrix.target }}
+
+      - name: Release Binary
+        shell: bash
+        run: |
+          if [[ "${{ matrix.runner }}" == "windows-latest" ]]; then
+            7z a ./${{ matrix.output }} ./target/${{matrix.target}}/release/fest.exe
+          else
+            tar czvf ./${{ matrix.output }} ./target/${{matrix.target}}/release/fest
+          fi
+      - name: Publish Github Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "fest_rs*"
