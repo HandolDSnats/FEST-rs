@@ -1,0 +1,16 @@
+[package]
+name = "fest-rs"
+version = "0.1.0"
+edition = "2021"
+authors = ["Handol D'Snats <>"]
+
+[lib]
+name = "fest"
+path = "src/lib/lib.rs"
+
+[[bin]]
+name = "fest"
+path = "src/bin/bin.rs"
+
+[dependencies]
+thiserror = "2.0.11"
