@@ -45,7 +45,7 @@ jobs:
       - name: Build Binary
         run: cargo build --verbose --locked --release --target ${{ matrix.target }}
 
-      - name: Release Binary
+      - name: Package Binary
         shell: bash
         run: |
           if [[ "${{ matrix.runner }}" == "windows-latest" ]]; then
@@ -53,6 +53,13 @@ jobs:
           else
             tar czvf ./${{ matrix.output }} ./target/${{matrix.target}}/release/fest
           fi
+
+      - name: Publish Release Files
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.output }}
+          path: fest_rs*
+
       - name: Publish Github Release
         uses: softprops/action-gh-release@v1
         with:
